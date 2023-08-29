@@ -7,7 +7,7 @@ import torch
 from torch import nn
 
 
-# ALL encoders should be called Enccoder<Model>
+# ALL encoders should be called Encoder<Model>
 def get_encoder(model_type):
     model_type = model_type.lower().capitalize()
     return eval("Encoder{}".format(model_type))
@@ -42,9 +42,10 @@ class EncoderBurgess(nn.Module):
         # Layer parameters
         hid_channels = 32
         kernel_size = 4
-        hidden_dim = 256
         self.latent_dim = latent_dim
         self.img_size = img_size
+        hidden_dim = 256
+
         # Shape required to start transpose convs
         self.reshape = (hid_channels, kernel_size, kernel_size)
         n_chan = self.img_size[0]
@@ -58,6 +59,12 @@ class EncoderBurgess(nn.Module):
         # If input image is 64x64 do fourth convolution
         if self.img_size[1] == self.img_size[2] == 64:
             self.conv_64 = nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+
+        # If input image is 64x64 do fourth convolution
+        if self.img_size[1] == self.img_size[2] == 256:
+            self.conv_64 = nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+            self.conv_128 = nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+            self.conv_256 = nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
 
         # Fully connected layers
         self.lin1 = nn.Linear(np.product(self.reshape), hidden_dim)
@@ -75,6 +82,11 @@ class EncoderBurgess(nn.Module):
         x = torch.relu(self.conv3(x))
         if self.img_size[1] == self.img_size[2] == 64:
             x = torch.relu(self.conv_64(x))
+        
+        if self.img_size[1] == self.img_size[2] == 256:
+            x = torch.relu(self.conv_64(x))
+            x = torch.relu(self.conv_128(x))
+            x = torch.relu(self.conv_256(x))
 
         # Fully connected layers with ReLu activations
         x = x.view((batch_size, -1))

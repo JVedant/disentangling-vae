@@ -60,6 +60,11 @@ class DecoderBurgess(nn.Module):
         if self.img_size[1] == self.img_size[2] == 64:
             self.convT_64 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
 
+        if self.img_size[1] == self.img_size[2] == 256:
+            self.convT_256 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+            self.convT_128 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+            self.convT_64 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+            
         self.convT1 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
         self.convT2 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
         self.convT3 = nn.ConvTranspose2d(hid_channels, n_chan, kernel_size, **cnn_kwargs)
@@ -76,6 +81,12 @@ class DecoderBurgess(nn.Module):
         # Convolutional layers with ReLu activations
         if self.img_size[1] == self.img_size[2] == 64:
             x = torch.relu(self.convT_64(x))
+
+        if self.img_size[1] == self.img_size[2] == 256:
+            x = torch.relu(self.convT_256(x))
+            x = torch.relu(self.convT_128(x))
+            x = torch.relu(self.convT_64(x))
+
         x = torch.relu(self.convT1(x))
         x = torch.relu(self.convT2(x))
         # Sigmoid activation for final conv layer

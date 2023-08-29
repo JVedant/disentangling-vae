@@ -9,6 +9,8 @@ from disvae.utils.initialization import weights_init
 from .encoders import get_encoder
 from .decoders import get_decoder
 
+import numpy as np
+
 MODELS = ["Burgess"]
 
 
@@ -38,8 +40,8 @@ class VAE(nn.Module):
         """
         super(VAE, self).__init__()
 
-        if list(img_size[1:]) not in [[32, 32], [64, 64]]:
-            raise RuntimeError("{} sized images not supported. Only (None, 32, 32) and (None, 64, 64) supported. Build your own architecture or reshape images!".format(img_size))
+        if list(img_size[1:]) not in [[32, 32], [64, 64], [256, 256]]:
+            raise RuntimeError("{} sized images not supported. Only (None, 32, 32), (None, 64, 64), and (None, 256, 256) supported. Build your own architecture or reshape images!".format(img_size))
 
         self.latent_dim = latent_dim
         self.img_size = img_size
@@ -99,3 +101,12 @@ class VAE(nn.Module):
         latent_dist = self.encoder(x)
         latent_sample = self.reparameterize(*latent_dist)
         return latent_sample
+
+if __name__ == "__main__":
+    random_image = np.random.rand(1, 1, 64, 64)  # Replace height and width with actual values
+    input_tensor = torch.FloatTensor(random_image)
+    encoder = get_encoder(model_type="Burgess")
+    decoder = get_decoder(model_type="Burgess")
+    model = VAE(img_size=[1, 64,64], latent_dim=10, encoder=encoder, decoder=decoder)
+    outputs = model(input_tensor)
+    print(outputs.shape)
